@@ -1,35 +1,65 @@
-import os;
-import urllib.request;
+import os; import urllib.request; import re;
+from collections import Counter
+from time import sleep
+
+regex = '([(\w+)]+) - - \[(.*?)\] "(.*?)" (\d+) (\d+)'				#breaks log into groupings of origin, date&time, command file protocol, code, size 
 
 
-def lineCount(logs):
+def lineCount(logs):                                                #count lines for total number of requests, keep corrupt entries as they're still requests
 	with open(logs) as x:
 		for i, l in enumerate(x):
 			pass
 	return i+1
 
-def checkForFile():
+def checkForFile():                                                 #check if file exists, else download
 	url = 'https://s3.amazonaws.com/tcmg476/http_access_log'
-	if os.path.exists("./http_access_log.txt") == False:
+	if os.path.exists("./http_access_log.txt") == False:            
 		print("Downloading access logs from:", url)
 		urllib.request.urlretrieve(url, "./http_access_log.txt")  
 
-def isEntryValid(logs):
+def isEntryValid(logs):                                             #corrupt entries lack hyphens, check for and remove corrupt log entries
 	validlog = '-'
+	invalid = 0
 	print("Stripping invalid or unreadable logfiles...")
 	with open('http_access_log.txt') as rawlogs, open('validlogs.txt', 'w') as validlogs:
 		for line in rawlogs:
 			if not any(validlog in line for valid in validlog):
 				pass
+				invalid += 1
 			else:
 				validlogs.write(line)
+	sleep(1)
+	print("Removed %d unreadable logfiles" % invalid)
+	return invalid
 
 
-def main():	
+def successCodes(logs, loglength):
+	with open(logs) as validlogs:				
+		i = 0
+		array = []
+		successcodes = 0
+		for line in validlogs:								#creating array of each log line
+			array.append(line)
+
+	while (i < loglength):								#iterate through strings in array for regex
+		line = re.match(regex, array[i]).groups()
+		if(line[3].startswith("3")):
+			successcodes+=1
+		i+=1
+	print("Number of successcodes: ", successcodes)
+
+
+def failCodes(logs):
+	pass
+
+
+def main(): 
 	checkForFile()
-	print("Number of requests made:", lineCount("./http_access_log.txt"))
-	isEntryValid("./http_access_log.txt")
-
+	totalResponses = lineCount("http_access_log.txt")
+	print("Number of requests made:", totalResponses)
+	totalErrorResponses = isEntryValid("http_access_log.txt")
+	totalValidResponses = totalResponses - totalErrorResponses
+	successCodes("validlogs.txt", totalValidResponses)
 
 main()
 
