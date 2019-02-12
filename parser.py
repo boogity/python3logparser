@@ -72,14 +72,38 @@ def clientErrors(totalResponses):
 				errorCounter += 1
 	print("Percentage of unsuccessful requests: {0:.2%}".format(errorCounter/totalResponses))		
 
+def mostPopularFile():
+	filelog = []
+	leastcommon = []
+	with open("./http_access_log.txt") as logs:
+		for line in logs:
+			try:
+				filelog.append(line[line.index("GET")+4:line.index("HTTP")])		#find all files sandwiched between GET requests and HTTP protocol"
+			except:
+				pass
+	counter = Counter(filelog)
+	for count in counter.most_common(1):														
+		print("Most commonly requested file: {} with {} requests.".format(str(count[0]), str(count[1])))
+	for count in counter.most_common():					#checking for file requests that only occur once as they must be the least requested
+		if str(count[1]) == '1':
+			leastcommon.append(count[0])
+	if leastcommon:										#TODO find least common file as well, there are MANY file requests that only occur once in the string though. Print all? 													
+		response = input("Looks like there were {} file(s) that were requested only once, show all? (y/n)".format(len(leastcommon)))
+		if response == ('y' or 'Y'):
+			for file in leastcommon:
+				print(file)
+
+
+		
 def main(): 
 	checkForFile()
 	totalResponses = lineCount("http_access_log.txt")
-	print("Total number of requests made:", totalResponses)
-	monthlylogs()
-	redirectCodes(totalResponses)
-	clientErrors(totalResponses)
-	
+	# print("Total number of requests made:", totalResponses)
+	# monthlylogs()
+	# redirectCodes(totalResponses)
+	# clientErrors(totalResponses)
+	mostPopularFile()
+
 main()
 # import os; import urllib.request; import re;
 # from collections import Counter
