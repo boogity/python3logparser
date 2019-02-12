@@ -8,40 +8,41 @@ def checkForFile():                                                 #check if fi
 		print("Downloading access logs from:", url)
 		urllib.request.urlretrieve(url, "./http_access_log.txt")  
 
-def lineCount(logs):                                                #count lines for total number of requests
+def lineCount(logs):                                                #count lines for total number of requests, this includes corrupted log entries as they're still requests made / served
 	with open(logs) as x:
 		for i, l in enumerate(x):
 			pass
 	return i+1
 
 def monthlylogs(): 
-	jan = 0; feb = 0; mar = 0; apr = 0; may = 0; jun = 0; 
+	jan = 0; feb = 0; mar = 0; apr = 0; may = 0; jun = 0; 			#counters for monthly logs
 	jul = 0; aug = 0; sep = 0; octs = 0; nov = 0; dec = 0;
 	with open("./http_access_log.txt") as logs:				
 		for line in logs:								
-			if re.search('\W*(Jan)\W*', line):
+			# if re.search('\W*(Jan)\W*', line):
+			if re.search('(/Jan/)', line):
 				jan+=1
-			if re.search('\W*(Feb)\W*', line):
+			if re.search('(/Feb/)', line):
 				feb+=1
-			if re.search('\W*(Mar)\W*', line):
+			if re.search('(/Mar/)', line):
 				mar+=1
-			if re.search('\W*(Apr)\W*', line):
+			if re.search('(/Apr/)', line):
 				apr+=1
-			if re.search('\W*(May)\W*', line):
+			if re.search('(/May/)', line):
 				may+=1
-			if re.search('\W*(Jun)\W*', line):
+			if re.search('(/Jun/)', line):
 				jun+=1
-			if re.search('\W*(Jul)\W*', line):
+			if re.search('(/Jul/)', line):
 				jul+=1
-			if re.search('\W*(Aug)\W*', line):
+			if re.search('(/Aug/)', line):
 				aug+=1
-			if re.search('\W*(Sep)\W*', line):
+			if re.search('(/Sep/)', line):
 				sep+=1
-			if re.search('\W*(Oct)\W*', line):
+			if re.search('(/Oct/)', line):
 				octs+=1
-			if re.search('\W*(Nov)\W*', line):
+			if re.search('(/Nov/)', line):
 				nov+=1
-			if re.search('\W*(Dec)\W*', line):
+			if re.search('(/Dec/)', line):
 				dec+=1
 		print("Total responses in January: ", jan)
 		print("Total responses in February: ", feb)
@@ -56,7 +57,7 @@ def monthlylogs():
 		print("Total responses in November: ", nov)
 		print("Total responses in December: ", dec)
 
-def redirectCodes(totalResponses):
+def redirectCodes(totalResponses):							#counter for redirection 30x codes adds up then divides by total responses, including invalid or corrupt entries
 	redirectCounter = 0.0
 	with open("./http_access_log.txt") as logs:				
 		for line in logs:
@@ -64,7 +65,7 @@ def redirectCodes(totalResponses):
 				redirectCounter += 1
 	print("Percentage of requests redirected elsewhere: {0:.2%}".format(redirectCounter/totalResponses))		
 	
-def clientErrors(totalResponses):
+def clientErrors(totalResponses):							#counter for client error 4xx codes adds up then divides by total responses, including invalid or corrupt entries
 	errorCounter = 0.0
 	with open("./http_access_log.txt") as logs:				
 		for line in logs:
@@ -72,7 +73,7 @@ def clientErrors(totalResponses):
 				errorCounter += 1
 	print("Percentage of unsuccessful requests: {0:.2%}".format(errorCounter/totalResponses))		
 
-def mostPopularFile():
+def fileCount():
 	filelog = []
 	leastcommon = []
 	with open("./http_access_log.txt") as logs:
@@ -92,90 +93,14 @@ def mostPopularFile():
 		if response == ('y' or 'Y'):
 			for file in leastcommon:
 				print(file)
-
-
-		
+	
 def main(): 
 	checkForFile()
 	totalResponses = lineCount("http_access_log.txt")
-	# print("Total number of requests made:", totalResponses)
-	# monthlylogs()
-	# redirectCodes(totalResponses)
-	# clientErrors(totalResponses)
-	mostPopularFile()
+	print("Total number of requests made:", totalResponses)
+	monthlylogs()
+	redirectCodes(totalResponses)
+	clientErrors(totalResponses)
+	fileCount()
 
 main()
-# import os; import urllib.request; import re;
-# from collections import Counter
-# from time import sleep
-
-# # regex = '([(\w+)]+) - - \[(.*?)\] "(.*?)" (\d+) (\S+)'				#breaks log into groupings of origin, date&time, command file protocol, code, size 
-# # regex = '([(\w+)]+) - - \[(.*?)\] "(.*)?"? (\d+) (\S+)'				#works for all errors until "GET"
-# # regex = '([(\w+)]+) - - \[(.*?)\] "(.*)?"? (\d+) (\S+)|([(\w+)]+) - - \[(.*?)\] "(.*)? '
-# regex = '([(\w+)]+) - - \[(.*?)\] "(.*)?"? (\d+) (\S+)|([(\w+)]+) - - \[(.*?)\] "(.*)?|([(\w+)]+) (\d+) - (\s+)(.*)?|(\S+) (\S+)" (\d+) -   (\S+)'
-
-
-# def lineCount(logs):                                                #count lines for total number of requests, keep corrupt entries as they're still requests
-# 	with open(logs) as x:
-# 		for i, l in enumerate(x):
-# 			pass
-# 	return i+1
-
-# def checkForFile():                                                 #check if file exists, else download
-# 	url = 'https://s3.amazonaws.com/tcmg476/http_access_log'
-# 	if os.path.exists("./http_access_log.txt") == False:            
-# 		print("Downloading access logs from:", url)
-# 		urllib.request.urlretrieve(url, "./http_access_log.txt")  
-
-# def isEntryValid(logs):                                             #corrupt entries lack hyphens, check for and remove corrupt log entries
-# 	validlog = '-'
-# 	invalid = 0
-# 	print("Stripping invalid or unreadable logfiles...")
-# 	with open('http_access_log.txt') as rawlogs, open('validlogs.txt', 'w') as validlogs:
-# 		for line in rawlogs:
-# 			if not any(validlog in line for valid in validlog):
-# 				pass
-# 				invalid += 1
-# 			else:
-# 				validlogs.write(line)
-# 	sleep(1)
-# 	print("Removed %d unreadable logfiles" % invalid)
-# 	return invalid
-
-
-# def successCodes(logs, loglength):
-# 	with open(logs) as validlogs:				
-# 		i = 0
-# 		array = []
-# 		successcodes = 0
-# 		for line in validlogs:								#creating array of each log line
-# 			array.append(line)
-
-# 	while (i < loglength):								#iterate through strings in array for regex
-# 		print("Line number: ", i)
-# 		line = re.findall(regex, array[i]).groups()
-# 		if(line[3].startswith("3")):
-# 			successcodes+=1
-# 		i+=1
-# 	print("Number of successcodes: ", successcodes)
-
-
-# def failCodes(logs):
-# 	pass
-
-
-# def main(): 
-# 	checkForFile()
-# 	totalResponses = lineCount("http_access_log.txt")
-# 	print("Number of requests made:", totalResponses)
-# 	totalErrorResponses = isEntryValid("http_access_log.txt")
-# 	totalValidResponses = totalResponses - totalErrorResponses
-# 	successCodes("validlogs.txt", totalValidResponses)
-
-# main()
-
-# #usps case number ca141722721
-# # local      index.html
-# # remote - - [10/Oct/1995:08:57:04 -0600] "GET index.html HTTP/1.0" 200 6061
-# # remote - - [10/Oct/1995:08:57:06 -0600] "GET 3119.gif HTTP/1.0" 200 2048
-# # local - - [10/Oct/1995:08:57:19 -0600] "GET index.html HTTP/1.0" 200 3020
