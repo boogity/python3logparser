@@ -148,6 +148,7 @@ def fileCount():
 
 	
 def main(): 
+	start_time = time.time()				#NOTE: Total program run time is affected by time waiting at the fileCount() input prompt
 	checkForFile()
 	totalResponses = lineCount("http_access_log.txt")
 	print("Total number of requests made:", totalResponses)
@@ -156,5 +157,5 @@ def main():
 	redirectCodes(totalResponses)
 	clientErrors(totalResponses)
 	fileCount()
-
+	print("--- %s seconds ---" % (time.time() - start_time))    #program clocks in at ~13.5 seconds with no delay on the prompt and file already downloaded
 main()
